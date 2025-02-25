@@ -1,11 +1,11 @@
-# DevSecOps Reto
+# Reto DevSecOps Marlon Cordoba C.
 
-Este proyecto demuestra la integración de **prácticas DevSecOps** en un flujo de CI/CD, desplegando una aplicación serverless en AWS (Lambda + API Gateway) y enviando hallazgos de seguridad a AWS Security Hub (opcional). Utiliza:
-
+En este reto se demuestra la integración de **prácticas DevSecOps** en un flujo de CI/CD, desplegando una aplicación serverless en AWS (Lambda + API Gateway) como tambien el Envio de hallazgos de seguridad a AWS Security Hub.
+Se Utiliza:
 1. **GitHub Actions** como pipeline de CI/CD.  
 2. **Serverless Framework** (v3) para gestionar el despliegue en AWS.  
 3. **Bandit** (SAST) y **OWASP Dependency-Check** (SCA).  
-4. (Opcional) **AWS Security Hub** para centralizar los hallazgos.
+4. **AWS Security Hub** para centralizar los hallazgos.
 
 ## Tabla de Contenidos
 1. [Arquitectura General](#arquitectura-general)  
@@ -16,8 +16,6 @@ Este proyecto demuestra la integración de **prácticas DevSecOps** en un flujo 
 6. [Security Hub (Opcional)](#security-hub-opcional)  
 7. [Cómo Ejecutar el Proyecto](#como-ejecutar-el-proyecto)  
 8. [Posibles Hallazgos de Seguridad](#hallazgos-de-seguridad)  
-9. [Licencia y Notas Finales](#licencia)
-
 ---
 
 ## 1. Arquitectura General
@@ -45,7 +43,7 @@ Reto_DevSecOps/
 ├── app.py                    # Código Python inseguro (SAST triggers)
 ├── requirements.txt          # Dependencias (SCA triggers)
 ├── serverless.yml            # Configuración Serverless
-├── README.md                 # Este archivo
+├── README.md                 # Explicación solución del Reto DevSecOps
 └── .github/
     └── workflows/
         └── ci-cd.yml        # Pipeline principal de CI/CD en GitHub Actions
@@ -62,7 +60,7 @@ Reto_DevSecOps/
 
 ## 3. Pipeline (CI/CD)
 
-El pipeline se ejecuta en cada push a la rama `main` y consta de los siguientes pasos:
+El pipeline se ejecuta en cada push a la rama `main` y este contiene los siguientes pasos:
 
 1. **Checkout repo**  
 2. **Set up Python** (Instala Python 3.8 en el runner).  
@@ -89,12 +87,12 @@ El pipeline se ejecuta en cada push a la rama `main` y consta de los siguientes 
 
 1. **Serverless** crea un **stack** de CloudFormation y un bucket de despliegue.  
 2. **Lambda** se implementa con la lógica de `app.py`.  
-3. **API Gateway** expone un endpoint HTTP (ejemplo: `https://xxxxx.execute-api.us-east-1.amazonaws.com/dev/`).  
+3. **API Gateway** expone un endpoint HTTP (ejemplo: `https://0zb5yk1sb4.execute-api.us-east-1.amazonaws.com/dev`).  
 4. La ejecución del pipeline exige que el usuario IAM tenga permisos adecuados de CloudFormation, Lambda, APIGateway, etc.
 
 **Para probar la app**:  
-- Visita el endpoint que aparece en los logs de `serverless deploy` o en la consola de CloudFormation / API Gateway.  
-- Deberías ver la respuesta JSON con un mensaje (por ejemplo, `"Hello from insecure code!"`).
+- Se valida el endpoint que aparece en los logs de `serverless deploy` o en la consola de CloudFormation / API Gateway.  
+- Respuesta JSON con un mensaje (por ejemplo, `"Insecure code triggered."`).
 
 ---
 
@@ -107,18 +105,18 @@ El pipeline se ejecuta en cada push a la rama `main` y consta de los siguientes 
 3. **Despliegue Automatizado**  
    - Los cambios se despliegan de forma continua en Lambda a través de GitHub Actions.  
 4. **(Opcional) Integración con AWS Security Hub**  
-   - Permite centralizar los hallazgos de seguridad en un dashboard unificado, si se importan manualmente.
+   - Permite centralizar los hallazgos de seguridad en un dashboard unificado.
 
 ---
 
-## 6. Security Hub (Opcional)
+## 6. Security Hub
 
 - Los frameworks nativos de Security Hub (CIS, Foundational, PCI) se centran en **configuraciones de AWS**, no en el código de la app.  
-- Para ver hallazgos de SAST/SCA en Security Hub, es necesario:
-  1. Generar un reporte en JSON (por ejemplo, `bandit_report.json`).  
+- Para validar los hallazgos de SAST/SCA en Security Hub, es necesario:
+  1. Generar un reporte en JSON (por ejemplo, `bandit-results.json`).  
   2. Transformarlo al esquema de Security Hub (`securityhub_findings.json`).  
   3. Subirlo: `aws securityhub batch-import-findings --findings file://securityhub_findings.json`.  
-- Así se reflejarán tus vulnerabilidades de código/librerías en Security Hub.
+- Acá se reflejan las vulnerabilidades de código/librerías en Security Hub.
 
 ---
 
@@ -126,7 +124,7 @@ El pipeline se ejecuta en cada push a la rama `main` y consta de los siguientes 
 
 ### Prerrequisitos
 
-1. **Cuenta de AWS** con un usuario IAM que tenga permisos de CloudFormation, IAM, Lambda, APIGateway, etc.  
+1. **Cuenta de AWS Personal MarlonAWS311** con usuario IAM que tenga permisos de CloudFormation, IAM, Lambda, APIGateway, etc.  
 2. **Variables de entorno**/Secrets configurados en GitHub:  
    - `AWS_ACCESS_KEY_ID`  
    - `AWS_SECRET_ACCESS_KEY`  
@@ -136,11 +134,11 @@ El pipeline se ejecuta en cada push a la rama `main` y consta de los siguientes 
 
 1. **Clonar este repositorio**.  
 2. **Configurar los secrets** en [Settings > Security > Secrets and variables > Actions] de tu repo:  
-   - `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` asociados a un usuario con permisos adecuados.  
-3. **Revisar** `.github/workflows/ci-cd.yml`. Ajusta si deseas cambiar región de AWS, flags de Bandit, etc.  
+   - `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` asociados al usuario con permisos adecuados.  
+3. **Revisar** `.github/workflows/ci-cd.yml`. se ajusta si desea cambiar región de AWS, flags de Bandit.  
 4. **Commit** cualquier cambio a la rama `main`.  
-5. **Ver la ejecución** en la pestaña **Actions**. Si todo está correcto, verás pasos completados con éxito (o con warnings si se detectan vulnerabilidades).  
-6. **(Opcional) Revisar Security Hub** si importas los findings manualmente.
+5. **Ver la ejecución** en la pestaña **Actions**. Si todo está correcto, se verán los pasos completados con éxito (o con warnings si se detectan vulnerabilidades).  
+6. **(Opcional) Revisar Security Hub** si se importa los findings manualmente.
 
 ---
 
@@ -153,20 +151,6 @@ El pipeline se ejecuta en cada push a la rama `main` y consta de los siguientes 
    - B303 (md5 hashing)  
    - Hard-coded secrets  
 2. **SCA (OWASP Dependency-Check)**  
-   - CVEs asociadas a Flask 0.12 y requests 2.8.1 (u otras versiones antiguas).  
+   - CVEs asociadas a Flask 0.12 y requests 2.8.1 (como tambien otras versiones antiguas).  
 3. **Security Hub**  
-   - Verás los hallazgos importados con severidad, fecha, descripción, etc., si implementas la conversión y subida de findings.
-
----
-
-## 9. Licencia y Notas Finales
-
-- El código inseguro está con fines **didácticos** para demostrar el pipeline DevSecOps. **No** usar en producción.  
-- Revisa la [documentación de Serverless](https://www.serverless.com/framework/docs) y [Bandit](https://bandit.readthedocs.io/) para más configuraciones.  
-- Ajusta las políticas IAM de tu usuario para permitir el despliegue con CloudFormation.  
-- Para ver los reportes HTML de Dependency-Check, sube el archivo como artefacto o cámbialo a formato `CONSOLE`.  
-- **¡Listo!** Con esto, cumples con un flujo DevSecOps automatizado, detectando vulnerabilidades en cada commit, centralizándolas (si quieres) en Security Hub y desplegando tu app en AWS.
-
----
-
-¡Gracias por usar este ejemplo! Si tienes preguntas o encuentras problemas al replicarlo, no dudes en abrir un **issue** o comentar en el repositorio. ¡Éxitos en tu reto DevSecOps!
+   - Se validaran los hallazgos importados con severidad, fecha, descripción.
