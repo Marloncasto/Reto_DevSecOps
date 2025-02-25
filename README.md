@@ -1,8 +1,4 @@
-A continuación se presenta un **README** que describe la solución final e integra todos los elementos: configuración de DevSecOps (SAST, SCA, Security Hub), despliegue en AWS usando Serverless y GitHub Actions, así como las instrucciones para reproducir el entorno.
-
----
-
-# DevSecOps Challenge
+# DevSecOps Reto
 
 Este proyecto demuestra la integración de **prácticas DevSecOps** en un flujo de CI/CD, desplegando una aplicación serverless en AWS (Lambda + API Gateway) y enviando hallazgos de seguridad a AWS Security Hub (opcional). Utiliza:
 
