@@ -1,0 +1,67 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    
+
+jobs:
+  build-and-deploy:
+    environment: Reto_DevSecOps 
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+        
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          npm install -g serverless@3
+          serverless plugin install -n serverless-python-requirements
+          
+      - name: Run SAST with Bandit
+        continue-on-error: true
+        run: |
+          pip install bandit
+          bandit -r . -f json -o bandit-results.json -x node_modules,venv --skip B108
+
+      - name: Run SCA with OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'My Project'
+          path: '.'
+          format: 'JSON'
+          out: './reports'
+        
+      - name: Upload Dependency-Check Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: './reports/dependency-check-report.json'
+          
+      - name: Deploy to AWS Lambda
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-1"
+        run: |
+          serverless deploy
+
+      - name: Process and send findings to AWS Security Hub
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-1"
+        run: |
+          pip install awscli
+          python process_findings.py
+          aws securityhub batch-import-findings --findings file://security-hub-findings.json
